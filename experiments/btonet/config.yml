@@ -1,0 +1,216 @@
+LOGGER_NAME: 'log'
+SEED: 1546884941.160048
+
+############################ TRAIN ############################
+TRAIN:
+  BATCH_SIZE: 16
+  #################### SCHEDULED_SAMPLING ####################
+  SCHEDULED_SAMPLING:
+    CAP_START: 5
+    CAP_INC_EVERY: 5
+    CAP_INC_PROB: 0.05
+    CAP_MAX_PROB: 0.5
+
+    OBJ_START: 0
+    OBJ_INC_EVERY: 5
+    OBJ_INC_PROB: 0.05
+    OBJ_MAX_PROB: 0.5
+  #################### REINFORCEMENT ####################
+  REINFORCEMENT:
+    START: 9999
+
+############################ TEST ############################  
+TEST:
+  BATCH_SIZE: 64
+
+############################ DATA_LOADER ############################
+DATA_LOADER:
+  NUM_WORKERS: 4
+  SHUFFLE: True
+  TRAIN_GV_FEAT: ''
+  TRAIN_ATT_FEATS: 'dataset/mscoco_torch/btonet/feature/updown'
+  VAL_GV_FEAT: ''
+  VAL_ATT_FEATS: 'dataset/mscoco_torch/btonet/feature/updown'
+  TEST_GV_FEAT: ''
+  TEST_ATT_FEATS: 'dataset/mscoco_torch/btonet/feature/updown'
+  TRAIN_ID: 'dataset/mscoco_torch/btonet/txt/coco_train_image_id.txt'
+  VAL_ID: 'dataset/mscoco_torch/btonet/txt/coco_val_image_id.txt'
+  TEST_ID: 'dataset/mscoco_torch/btonet/txt/coco_test_image_id.txt'
+  INPUT_SEQ_PATH: 'dataset/mscoco_torch/btonet/sent/coco_train_input.pkl'
+  TARGET_SEQ_PATH: 'dataset/mscoco_torch/btonet/sent/coco_train_target.pkl'
+  OBJ_VOCAB_PATH: 'dataset/mscoco_torch/btonet/txt/obj_vocab.txt'
+  REGION_INFO_PATH: 'dataset/mscoco_torch/btonet/sent/regions_info.pkl'
+  TOKEN_INFO_PATH: 'dataset/mscoco_torch/btonet/sent/tokens_train_info.pkl'
+  TOKEN_INFO_TEST_PATH: 'dataset/mscoco_torch/btonet/sent/tokens_test_info.pkl'
+  MIL_LABEL: 'dataset/mscoco_torch/btonet/misc/mil_labels.pkl'
+  SEQ_PER_IMG: 5
+  MAX_FEAT: 50
+  USE_LONG_OBJ: True
+
+############################ MODEL ############################
+MODEL:
+  TYPE: 'Btoformer'
+  SEQ_LEN: 17                               # include <EOS>/<BOS>
+  VOCAB_SIZE: 9222                          # exclude <EOS>/<BOS>
+  ########## word embedding ##########
+  WORD_EMBED_DIM: 512
+  WORD_EMBED_ACT: 'NONE'
+  WORD_EMBED_NORM: True                   
+  DROPOUT_WORD_EMBED: 0.1
+  ########## global features ##########
+  GVFEAT_DIM: -1
+  GVFEAT_EMBED_DIM: -1
+  GVFEAT_EMBED_ACT: 'NONE'
+  DROPOUT_GV_EMBED: 0.0
+  ########## attention features ##########
+  ATT_FEATS_DIM: 2048
+  ATT_FEATS_EMBED_DIM: 512
+  ATT_FEATS_EMBED_ACT: 'RELU'
+  DROPOUT_ATT_EMBED: 0.5
+  ATT_FEATS_NORM: True
+  ########## attention param ##########
+  ATT_HIDDEN_SIZE: -1
+  ATT_HIDDEN_DROP: 0.0
+  ATT_ACT: 'TANH'
+  ########## rnn param ##########
+  RNN_SIZE: 1024
+  DROPOUT_LM: 0.5
+
+  OBJ_USE_AOA: False      #######################################################################
+  OBJ_AOA_DROP: 0.1
+  OBJ_ENC: 'OBJ_ENC_TWO'
+  CAP_USE_AOA: False      #######################################################################
+  CAP_AOA_DROP: 0.1
+
+  ########## BOTTOM_UP ##########
+  BOTTOM_UP:
+    DROPOUT_FIRST_INPUT: 0.0
+    DROPOUT_SEC_INPUT: 0.0
+
+  ########## TRANSFORMER ##########
+  TRANSFORMER:
+    OBJ_DIM: 512      #######################################################################
+    DIM: 512
+    HEAD: 8
+    ATTENTION_DROPOUT: 0.1
+    ENCODE_DROPOUT: 0.1
+    ENCODE_FF_DROPOUT: 0.1
+    ENCODE_LAYERS: 6
+    DECODE_DROPOUT: 0.1
+    DECODE_FF_DROPOUT: 0.1
+    DECODE_LAYERS: 6
+
+  ######### BTONet #############
+  BTONET:
+    ATT_HIDDEN_DROP: 0.0
+    DROPOUT1: 0.0
+    DROPOUT2: 0.0
+    ENCODE_LAYERS: 6
+    TRAIN_WITH_GT: False
+    TRAIN_WITH_TOPK: -1
+    TOPK_SCORE_GRAD: False
+    TRAIN_FILTER_REG_TOPK: -1
+    TEST_FILTER_REG_TOPK: 15
+    DEC_NO_REPEAT: True
+    OBJ_MH: True      #######################################################################              
+    OBJ_USE_LANG_GUIDE: False
+    OBJ_DROP_ENC_LAYER: 0.1
+    CAP_DROP_ENC_LAYER: 0.1
+    CAP_DROP_DEC_LAYER: 0.1
+    USE_HEAD_TRANSFORM: True
+    USE_MULTILAYER: True
+ 
+############################ SOLVER ############################  
+SOLVER:
+  OBJ_PRETRAIN_EPOCH: 20
+  CAP_PRETRAIN_EPOCH: 20
+
+  OBJ_BASE_LR: 0.0004
+  CAP_BASE_LR: 0.0004
+  MIN_LR: 0.00001
+  TYPE: 'ADAM'                 # 'ADAM', 'SGD', 'RADAM'
+  MAX_EPOCH: 10
+  CONST_EPOCH: 20
+  #MAX_EPOCH:80
+  MAX_ITER: -1
+  GRAD_CLIP: 0.1                # Norm:0.5 , Clamp:0.1
+  GRAD_CLIP_TYPE: 'Clamp'       # 'Clamp'  , 'Norm'
+  WEIGHT_DECAY: 0.0000
+  WEIGHT_DECAY_BIAS: 0.0
+  BIAS_LR_FACTOR: 1
+  DISPLAY: 20
+  TEST_INTERVAL: 1
+  SNAPSHOT_ITERS: 1
+
+  ########## SGD ##########
+  SGD:
+    MOMENTUM: 0.9
+  ########## ADAM ##########
+  ADAM:
+    BETAS: [0.9, 0.999]
+    EPS: 1.0e-8
+  ########## LR_POLICY ##########
+  OBJ_LR_POLICY:
+    TYPE: 'warmup_linear'     # 'Fix', 'Step', 'Noam', 'Plateau'
+    GAMMA: 0.8
+    STEP_SIZE: 3
+    SETP_TYPE: 'Iter'         # 'Epoch', 'Iter'
+    WARMUP_EPOCH: 6
+  CAP_LR_POLICY:
+    TYPE: 'warmup_linear'     # 'Fix', 'Step', 'Noam', 'Plateau'
+    GAMMA: 0.8
+    STEP_SIZE: 3
+    SETP_TYPE: 'Iter'         # 'Epoch', 'Iter'
+    WARMUP_EPOCH: 6
+
+############################ LOSSES ############################
+LOSSES:
+  XE_TYPE: 'LabelSmoothing'     # 'CrossEntropy', 'LabelSmoothing'
+  LABELSMOOTHING: 0.1
+  RL_TYPE: 'RewardCriterion'
+
+  REGION:
+    LOSS_WEIGHT: 0.1
+    MLP: [512]
+
+  NCE:
+    LOSS_WEIGHT: 1.0
+    MLP: [512]
+    STOP_GRAD: True
+    NORM: False
+    TEMP: 0.1
+
+  OBJ_REGION:
+    LOSS_WEIGHT: 0.1
+    MLP: [512]
+
+  OBJ_REGION_DEC:
+    LOSS_WEIGHT: 0.1
+    MLP: [512]
+
+  REGION_ATT:
+    LOSS_WEIGHT: 0.0
+
+  OBJ_DEC_ATT:
+    LOSS_WEIGHT: 0.0
+
+  GV_SUP:
+    LOSS_WEIGHT: 0.0
+
+############################ SCORER ############################
+SCORER:
+  TYPES: ['CIDEr']
+  WEIGHTS: [1.0]
+  GT_PATH: 'dataset/mscoco_torch/btonet/misc/coco_train_gts.pkl'
+  CIDER_CACHED: 'dataset/mscoco_torch/btonet/misc/coco_train_cider.pkl'
+  
+############################ INFERENCE ############################
+INFERENCE:
+  VOCAB: 'dataset/mscoco_torch/btonet/txt/coco_vocabulary.txt'
+  ID_KEY: 'image_id'
+  CAP_KEY: 'caption'
+  EVAL: 'COCO'
+  VAL_ANNFILE: 'dataset/mscoco_torch/btonet/misc/captions_val5k.json'
+  TEST_ANNFILE: 'dataset/mscoco_torch/btonet/misc/captions_test5k.json'
+  BEAM_SIZE: 2
+  GREEDY_DECODE: True
